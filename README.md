@@ -246,8 +246,9 @@ hadoop-cluster/
 │   ├── hadoop/               # core-site.xml + hdfs-site.xml pour PutHDFS
 │   └── input/                # Fichiers à ingérer (GetFile)
 ├── downloads/                # Archives pré-téléchargées pour le build (non versionnées)
-├── scripts/                  # Scripts copiés dans le conteneur
-│   ├── fetch-deps.sh         # Pré-télécharge les 4 archives dans downloads/
+├── scripts/                  # Scripts (entrypoint copié dans le conteneur + helpers hôte)
+│   ├── fetch-deps.sh         # Pré-télécharge les 4 archives dans downloads/ (Linux/macOS/Git Bash)
+│   ├── fetch-deps.bat        # Idem, pour Windows (cmd / PowerShell)
 │   ├── entrypoint.sh          # Entrypoint (init réseau + heaps JVM)
 │   └── master/                # Scripts de gestion des services (dans /home/)
 │       ├── start-all.sh       # Démarre tous les services en ordre
