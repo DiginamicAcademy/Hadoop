@@ -23,6 +23,9 @@ Stack Hadoop complète pour l'apprentissage, déployable en local ou sur VM.
 ## Quick start
 
 ```bash
+# (Optionnel, connexion lente) pré-télécharger les archives :
+#   sh scripts/fetch-deps.sh   (Linux/macOS/Git Bash)  ou  scripts\fetch-deps.bat   (Windows)
+
 # Build de l'image (premier build : ~1,5 Go à télécharger, voir « Rebuild complet »)
 docker compose build
 
