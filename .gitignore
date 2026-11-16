@@ -2,6 +2,8 @@ volumes/
 __pycache__/
 *.pyc
 .DS_Store
+# Archives pré-téléchargées pour le build (scripts/fetch-deps.sh)
+downloads/*.tar.gz
 # Fichiers ingérés par NiFi (ne pas versionner les données de TP)
 nifi/input/*
 !nifi/input/.gitkeep

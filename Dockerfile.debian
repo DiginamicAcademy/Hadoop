@@ -9,41 +9,45 @@ ARG HIVE_VERSION=4.1.0
 RUN apk add --no-cache curl
 
 # dlcdn.apache.org ne conserve que le DERNIER release de chaque branche : des
-# qu'une version est remplacee, elle migre sur archive.apache.org (deja le cas
-# de HBase 2.5.15 et ZooKeeper 3.8.6, et de Hive 4.1.0 qui n'a jamais ete sur
+# qu'une version est remplacée, elle migre sur archive.apache.org (déjà le cas
+# de HBase 2.5.15 et ZooKeeper 3.8.6, et de Hive 4.1.0 qui n'a jamais été sur
 # dlcdn). On tente donc dlcdn (rapide), puis l'archive (toutes les versions).
-# On telecharge AVANT d'extraire : `curl ... | tar xz` laissait une extraction
-# partielle et le message trompeur "tar: invalid magic" quand l'URL repondait 404.
-RUN set -eux; \
-    rel="hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz"; \
-    curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://dlcdn.apache.org/$rel" \
-      || curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://archive.apache.org/dist/$rel"; \
-    tar xzf /tmp/hadoop.tar.gz -C /opt; \
-    rm /tmp/hadoop.tar.gz; \
-    mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop
+# Archives pré-téléchargées (optionnel) : déposer les 4 .tar.gz dans downloads/
+# (voir scripts/fetch-deps.sh). Sinon, elles sont téléchargées au build.
+COPY downloads/ /tmp/dl/
 
-RUN set -eux; \
-    rel="hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz"; \
-    curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://dlcdn.apache.org/$rel" \
-      || curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://archive.apache.org/dist/$rel"; \
-    tar xzf /tmp/hbase.tar.gz -C /opt; \
-    rm /tmp/hbase.tar.gz; \
-    mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase
+# Téléchargements en parallèle (le plus lent conditionne le temps total).
+# Une archive locale présente et lisible est utilisée telle quelle, sinon
+# dlcdn puis archive.apache.org en repli. On télécharge AVANT d'extraire :
+# `curl ... | tar xz` laissait une extraction partielle et le message trompeur
+# "tar: invalid magic" quand l'URL répondait 404.
+RUN set -eu; \
+    cd /tmp/dl; \
+    fetch() { \
+        name="$1"; rel="$2"; \
+        if [ -s "$name" ] && tar tzf "$name" >/dev/null 2>&1; then \
+            echo ">> $name : archive locale utilisée"; \
+        else \
+            echo ">> $name : téléchargement"; \
+            curl -fSL --retry 3 --retry-delay 5 -o "$name" "https://dlcdn.apache.org/$rel" \
+              || curl -fSL --retry 3 --retry-delay 5 -o "$name" "https://archive.apache.org/dist/$rel"; \
+        fi; \
+    }; \
+    fetch "hadoop-$HADOOP_VERSION.tar.gz" "hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" & p1=$!; \
+    fetch "hbase-$HBASE_VERSION-hadoop3-bin.tar.gz" "hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz" & p2=$!; \
+    fetch "apache-zookeeper-$ZK_VERSION-bin.tar.gz" "zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz" & p3=$!; \
+    fetch "apache-hive-$HIVE_VERSION-bin.tar.gz" "hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz" & p4=$!; \
+    fail=0; \
+    wait "$p1" || fail=1; \
+    wait "$p2" || fail=1; \
+    wait "$p3" || fail=1; \
+    wait "$p4" || fail=1; \
+    [ "$fail" -eq 0 ]
 
-RUN set -eux; \
-    rel="zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz"; \
-    curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://dlcdn.apache.org/$rel" \
-      || curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://archive.apache.org/dist/$rel"; \
-    tar xzf /tmp/zookeeper.tar.gz -C /opt; \
-    rm /tmp/zookeeper.tar.gz; \
-    mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper
-
-RUN set -eux; \
-    curl -fsSL --retry 3 -o /tmp/hive.tar.gz \
-      "https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"; \
-    tar xzf /tmp/hive.tar.gz -C /opt; \
-    rm /tmp/hive.tar.gz; \
-    mv /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
+RUN tar xzf /tmp/dl/hadoop-$HADOOP_VERSION.tar.gz -C /opt && mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop \
+ && tar xzf /tmp/dl/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz -C /opt && mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase \
+ && tar xzf /tmp/dl/apache-zookeeper-$ZK_VERSION-bin.tar.gz -C /opt && mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper \
+ && tar xzf /tmp/dl/apache-hive-$HIVE_VERSION-bin.tar.gz -C /opt && mv /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
 
 RUN rm -rf \
     /opt/hadoop/share/doc \

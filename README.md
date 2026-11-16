@@ -23,7 +23,7 @@ Stack Hadoop complète pour l'apprentissage, déployable en local ou sur VM.
 ## Quick start
 
 ```bash
-# Build de l'image (~5-10 min selon la connexion)
+# Build de l'image (premier build : ~1,5 Go à télécharger, voir « Rebuild complet »)
 docker compose build
 
 # Lancement des 4 conteneurs (3 cluster + NiFi) (froids : SSH uniquement)
@@ -195,10 +195,29 @@ Guide complet pour l'installation sur VM Proxmox → [`docs/deploiement-vm.md`](
 
 ## Rebuild complet
 
+Un simple `docker compose build` réutilise le cache Docker : tant que le
+Dockerfile et les sources ne changent pas, rien n'est re-téléchargé.
+N'utilisez `--no-cache` que si vous voulez vraiment tout refaire — les
+~1,5 Go de binaires Apache seront alors re-téléchargés.
+
+### Pré-télécharger les archives (connexion lente)
+
+Le build télécharge Hadoop, HBase, ZooKeeper et Hive (~1,5 Go ; Hive vient
+d'archive.apache.org, souvent lent). Pour ne pas dépendre du réseau au moment
+du build :
+
+```bash
+sh scripts/fetch-deps.sh
+```
+
+dépose les 4 archives dans `downloads/` (reprise possible en cas de coupure).
+Le build les utilise automatiquement si elles sont présentes et valides,
+sinon il télécharge comme avant. `downloads/` n'est pas versionné.
+
 ```bash
 # -v : supprime aussi les volumes
 docker compose down -v
-docker compose build --no-cache
+docker compose build
 docker compose up -d
 ```
 
@@ -225,7 +244,9 @@ hadoop-cluster/
 │   ├── README.md             # Setup volumes + PutHDFS
 │   ├── hadoop/               # core-site.xml + hdfs-site.xml pour PutHDFS
 │   └── input/                # Fichiers à ingérer (GetFile)
+├── downloads/                # Archives pré-téléchargées pour le build (non versionnées)
 ├── scripts/                  # Scripts copiés dans le conteneur
+│   ├── fetch-deps.sh         # Pré-télécharge les 4 archives dans downloads/
 │   ├── entrypoint.sh          # Entrypoint (init réseau + heaps JVM)
 │   └── master/                # Scripts de gestion des services (dans /home/)
 │       ├── start-all.sh       # Démarre tous les services en ordre
