@@ -19,8 +19,9 @@ dl() {
 }
 
 dl "https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" & p1=$!
-dl "https://dlcdn.apache.org/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz" & p2=$!
-dl "https://dlcdn.apache.org/zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz" & p3=$!
+# HBase et ZooKeeper ne sont plus sur dlcdn (versions sorties du CDN) : archive.apache.org
+dl "https://archive.apache.org/dist/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz" & p2=$!
+dl "https://archive.apache.org/dist/zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz" & p3=$!
 # Hive 4.1.0 n'est plus sur dlcdn : archive.apache.org (lent, d'où l'intérêt de ce script)
 dl "https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz" & p4=$!
 

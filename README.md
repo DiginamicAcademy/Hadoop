@@ -24,7 +24,8 @@ Stack Hadoop complète pour l'apprentissage, déployable en local ou sur VM.
 
 ```bash
 # (Optionnel, connexion lente) pré-télécharger les archives :
-#   sh scripts/fetch-deps.sh   (Linux/macOS/Git Bash)  ou  scripts\fetch-deps.bat   (Windows)
+sh scripts/fetch-deps.sh    # (Linux/macOS/Git Bash)
+# ou scripts\fetch-deps.bat   (Windows)
 
 # Build de l'image (premier build : ~1,5 Go à télécharger, voir « Rebuild complet »)
 docker compose build
@@ -205,9 +206,9 @@ N'utilisez `--no-cache` que si vous voulez vraiment tout refaire — les
 
 ### Pré-télécharger les archives (connexion lente)
 
-Le build télécharge Hadoop, HBase, ZooKeeper et Hive (~1,5 Go ; Hive vient
-d'archive.apache.org, souvent lent). Pour ne pas dépendre du réseau au moment
-du build :
+Le build télécharge Hadoop, HBase, ZooKeeper et Hive (~1,5 Go ; HBase,
+ZooKeeper et Hive viennent d'archive.apache.org, souvent lent). Pour ne pas
+dépendre du réseau au moment du build :
 
 ```bash
 sh scripts/fetch-deps.sh        # Linux / macOS / Git Bash

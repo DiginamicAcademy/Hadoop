@@ -14,8 +14,9 @@ set ZK_VERSION=3.8.6
 set HIVE_VERSION=4.1.0
 
 curl.exe -fSL -C - --retry 3 -O https://dlcdn.apache.org/hadoop/common/hadoop-%HADOOP_VERSION%/hadoop-%HADOOP_VERSION%.tar.gz || exit /b 1
-curl.exe -fSL -C - --retry 3 -O https://dlcdn.apache.org/hbase/%HBASE_VERSION%/hbase-%HBASE_VERSION%-hadoop3-bin.tar.gz || exit /b 1
-curl.exe -fSL -C - --retry 3 -O https://dlcdn.apache.org/zookeeper/zookeeper-%ZK_VERSION%/apache-zookeeper-%ZK_VERSION%-bin.tar.gz || exit /b 1
+REM HBase et ZooKeeper ne sont plus sur dlcdn (versions sorties du CDN) : archive.apache.org
+curl.exe -fSL -C - --retry 3 -O https://archive.apache.org/dist/hbase/%HBASE_VERSION%/hbase-%HBASE_VERSION%-hadoop3-bin.tar.gz || exit /b 1
+curl.exe -fSL -C - --retry 3 -O https://archive.apache.org/dist/zookeeper/zookeeper-%ZK_VERSION%/apache-zookeeper-%ZK_VERSION%-bin.tar.gz || exit /b 1
 REM Hive 4.1.0 n'est plus sur dlcdn : archive.apache.org (lent, d'où l'intérêt de ce script)
 curl.exe -fSL -C - --retry 3 -O https://archive.apache.org/dist/hive/hive-%HIVE_VERSION%/apache-hive-%HIVE_VERSION%-bin.tar.gz || exit /b 1
 
