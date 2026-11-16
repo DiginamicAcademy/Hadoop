@@ -9,8 +9,8 @@ Stack Hadoop complète pour l'apprentissage, déployable en local ou sur VM.
 | OS | Debian 12 (bookworm) | `debian:bookworm-slim` (Docker Hub) |
 | Java | OpenJDK 17.0.14 | `java-17-openjdk-jdk-headless` |
 | Hadoop | 3.3.6 | [dlcdn.apache.org](https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz) |
-| HBase | 2.5.15 | [dlcdn.apache.org](https://dlcdn.apache.org/hbase/2.5.15/hbase-2.5.15-hadoop3-bin.tar.gz) |
-| ZooKeeper | 3.8.6 | [dlcdn.apache.org](https://dlcdn.apache.org/zookeeper/zookeeper-3.8.6/apache-zookeeper-3.8.6-bin.tar.gz) |
+| HBase | 2.5.15 | [archive.apache.org](https://archive.apache.org/dist/hbase/2.5.15/hbase-2.5.15-hadoop3-bin.tar.gz) (`dlcdn` ne garde que le dernier release) |
+| ZooKeeper | 3.8.6 | [archive.apache.org](https://archive.apache.org/dist/zookeeper/zookeeper-3.8.6/apache-zookeeper-3.8.6-bin.tar.gz) (`dlcdn` ne garde que le dernier release) |
 | Hive | 4.1.0 | [archive.apache.org](https://archive.apache.org/dist/hive/hive-4.1.0/apache-hive-4.1.0-bin.tar.gz) — 4.2 exige Java 21, l'image tourne en Java 17 |
 | NiFi | 2.11.0 | `apache/nifi:2.11.0` (Docker Hub, conteneur dédié) |
 | Python | 3.11 | pip : pandas, matplotlib, happybase, thriftpy2 |

@@ -8,18 +8,42 @@ ARG ZK_VERSION=3.8.6
 ARG HIVE_VERSION=4.1.0
 RUN apk add --no-cache curl
 
-RUN curl -fsSL https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
-    | tar xz -C /opt && mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop
+# dlcdn.apache.org ne conserve que le DERNIER release de chaque branche : des
+# qu'une version est remplacee, elle migre sur archive.apache.org (deja le cas
+# de HBase 2.5.15 et ZooKeeper 3.8.6, et de Hive 4.1.0 qui n'a jamais ete sur
+# dlcdn). On tente donc dlcdn (rapide), puis l'archive (toutes les versions).
+# On telecharge AVANT d'extraire : `curl ... | tar xz` laissait une extraction
+# partielle et le message trompeur "tar: invalid magic" quand l'URL repondait 404.
+RUN set -eux; \
+    rel="hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/hadoop.tar.gz -C /opt; \
+    rm /tmp/hadoop.tar.gz; \
+    mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop
 
-RUN curl -fsSL https://dlcdn.apache.org/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz \
-    | tar xz -C /opt && mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase
+RUN set -eux; \
+    rel="hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/hbase.tar.gz -C /opt; \
+    rm /tmp/hbase.tar.gz; \
+    mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase
 
-RUN curl -fsSL https://dlcdn.apache.org/zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz \
-    | tar xz -C /opt && mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper
+RUN set -eux; \
+    rel="zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/zookeeper.tar.gz -C /opt; \
+    rm /tmp/zookeeper.tar.gz; \
+    mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper
 
-# 4.1.0 n'est plus sur dlcdn (seul miroir des 4.2.x) : archive.apache.org
-RUN curl -fsSL https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz \
-    | tar xz -C /opt && mv /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
+RUN set -eux; \
+    curl -fsSL --retry 3 -o /tmp/hive.tar.gz \
+      "https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"; \
+    tar xzf /tmp/hive.tar.gz -C /opt; \
+    rm /tmp/hive.tar.gz; \
+    mv /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
 
 RUN rm -rf \
     /opt/hadoop/share/doc \

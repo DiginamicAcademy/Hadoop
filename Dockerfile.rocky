@@ -6,14 +6,33 @@ ARG HBASE_VERSION=2.5.15
 ARG ZK_VERSION=3.8.6
 RUN dnf install -y --allowerasing curl && rm -rf /var/cache/dnf
 
-RUN curl -fsSL https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz \
-    | tar xz -C /opt && mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop
+# dlcdn.apache.org ne garde que le dernier release de chaque branche : les
+# versions remplacees migrent sur archive.apache.org (HBase 2.5.15 et
+# ZooKeeper 3.8.6 y sont deja). On tente dlcdn puis l'archive, et on
+# telecharge avant d'extraire pour eviter une extraction partielle sur 404.
+RUN set -eux; \
+    rel="hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/hadoop.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/hadoop.tar.gz -C /opt; \
+    rm /tmp/hadoop.tar.gz; \
+    mv /opt/hadoop-$HADOOP_VERSION /opt/hadoop
 
-RUN curl -fsSL https://dlcdn.apache.org/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz \
-    | tar xz -C /opt && mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase
+RUN set -eux; \
+    rel="hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-hadoop3-bin.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/hbase.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/hbase.tar.gz -C /opt; \
+    rm /tmp/hbase.tar.gz; \
+    mv /opt/hbase-$HBASE_VERSION-hadoop3 /opt/hbase
 
-RUN curl -fsSL https://dlcdn.apache.org/zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz \
-    | tar xz -C /opt && mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper
+RUN set -eux; \
+    rel="zookeeper/zookeeper-$ZK_VERSION/apache-zookeeper-$ZK_VERSION-bin.tar.gz"; \
+    curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://dlcdn.apache.org/$rel" \
+      || curl -fsSL --retry 3 -o /tmp/zookeeper.tar.gz "https://archive.apache.org/dist/$rel"; \
+    tar xzf /tmp/zookeeper.tar.gz -C /opt; \
+    rm /tmp/zookeeper.tar.gz; \
+    mv /opt/apache-zookeeper-$ZK_VERSION-bin /opt/zookeeper
 
 RUN rm -rf \
     /opt/hadoop/share/doc \
