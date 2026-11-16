@@ -206,8 +206,9 @@ N'utilisez `--no-cache` que si vous voulez vraiment tout refaire — les
 
 ### Pré-télécharger les archives (connexion lente)
 
-Le build télécharge Hadoop, HBase, ZooKeeper et Hive (~1,5 Go ; HBase,
-ZooKeeper et Hive viennent d'archive.apache.org, souvent lent). Pour ne pas
+Le build télécharge Hadoop, HBase, ZooKeeper et Hive (~1,5 Go). Les versions
+sorties du CDN (HBase, ZooKeeper, Hive) passent par le miroir Huawei Cloud
+(rapide) avec repli sur archive.apache.org (référence, lent). Pour ne pas
 dépendre du réseau au moment du build :
 
 ```bash

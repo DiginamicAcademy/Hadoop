@@ -11,14 +11,16 @@ RUN apk add --no-cache curl
 # dlcdn.apache.org ne conserve que le DERNIER release de chaque branche : des
 # qu'une version est remplacée, elle migre sur archive.apache.org (déjà le cas
 # de HBase 2.5.15 et ZooKeeper 3.8.6, et de Hive 4.1.0 qui n'a jamais été sur
-# dlcdn). On tente donc dlcdn (rapide), puis l'archive (toutes les versions).
+# dlcdn). On tente donc dlcdn (rapide), puis le miroir Huawei Cloud (archive
+# complète, rapide), puis archive.apache.org (référence, lent).
 # Archives pré-téléchargées (optionnel) : déposer les 4 .tar.gz dans downloads/
 # (voir scripts/fetch-deps.sh). Sinon, elles sont téléchargées au build.
 COPY downloads/ /tmp/dl/
 
 # Téléchargements en parallèle (le plus lent conditionne le temps total).
 # Une archive locale présente et lisible est utilisée telle quelle, sinon
-# dlcdn puis archive.apache.org en repli. On télécharge AVANT d'extraire :
+# dlcdn, puis miroir Huawei Cloud, puis archive.apache.org en repli. On
+# télécharge AVANT d'extraire :
 # `curl ... | tar xz` laissait une extraction partielle et le message trompeur
 # "tar: invalid magic" quand l'URL répondait 404.
 RUN set -eu; \
@@ -30,6 +32,7 @@ RUN set -eu; \
         else \
             echo ">> $name : téléchargement"; \
             curl -fSL --retry 3 --retry-delay 5 -o "$name" "https://dlcdn.apache.org/$rel" \
+              || curl -fSL --retry 3 --retry-delay 5 -o "$name" "https://mirrors.huaweicloud.com/apache/$rel" \
               || curl -fSL --retry 3 --retry-delay 5 -o "$name" "https://archive.apache.org/dist/$rel"; \
         fi; \
     }; \
