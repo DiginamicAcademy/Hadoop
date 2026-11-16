@@ -207,7 +207,8 @@ d'archive.apache.org, souvent lent). Pour ne pas dépendre du réseau au moment
 du build :
 
 ```bash
-sh scripts/fetch-deps.sh
+sh scripts/fetch-deps.sh        # Linux / macOS / Git Bash
+scripts\fetch-deps.bat          # Windows (cmd / PowerShell)
 ```
 
 dépose les 4 archives dans `downloads/` (reprise possible en cas de coupure).
